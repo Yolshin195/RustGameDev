@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Курс: Создание игры на Rust - Крестики-нолики</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #0ea5e9 100%);
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .game-preview {
+            background: linear-gradient(45deg, #1e293b 0%, #334155 100%);
+        }
+        .cta-button {
+            transition: all 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+        .module-item {
+            transition: all 0.2s ease;
+        }
+        .module-item:hover {
+            background-color: #f1f5f9;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-chess-board text-blue-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-gray-900">Rust GameDev</span>
+                    </div>
+                </div>
+                <div class="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+                    <a href="#about" class="text-gray-900 hover:text-blue-600 px-3 py-2 text-sm font-medium">О курсе</a>
+                    <a href="#program" class="text-gray-900 hover:text-blue-600 px-3 py-2 text-sm font-medium">Программа</a>
+                    <a href="#results" class="text-gray-900 hover:text-blue-600 px-3 py-2 text-sm font-medium">Результаты</a>
+                    <a href="#faq" class="text-gray-900 hover:text-blue-600 px-3 py-2 text-sm font-medium">FAQ</a>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium cta-button">
+                        Записаться
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center md:hidden">
+                    <button type="button" id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div class="hidden md:hidden" id="mobile-menu">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#about" class="block px-3 py-2 text-base font-medium text-gray-900 hover:text-blue-600 hover:bg-gray-50">О курсе</a>
+                <a href="#program" class="block px-3 py-2 text-base font-medium text-gray-900 hover:text-blue-600 hover:bg-gray-50">Программа</a>
+                <a href="#results" class="block px-3 py-2 text-base font-medium text-gray-900 hover:text-blue-600 hover:bg-gray-50">Результаты</a>
+                <a href="#faq" class="block px-3 py-2 text-base font-medium text-gray-900 hover:text-blue-600 hover:bg-gray-50">FAQ</a>
+                <button class="block w-full text-left px-3 py-2 text-base font-medium text-blue-600 hover:bg-blue-50">
+                    Записаться
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+            <div class="md:flex items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-6">
+                        Создай свою первую игру на Rust — Крестики-нолики
+                    </h1>
+                    <p class="text-xl mb-8 text-blue-100">
+                        Освой основы Rust и 2D-графику с macroquad, создай игру с нуля и запусти её в браузере!
+                    </p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button class="bg-white text-blue-600 hover:bg-gray-100 px-6 py-3 rounded-md text-lg font-semibold cta-button">
+                            Начать обучение
+                        </button>
+                        <button class="bg-transparent border-2 border-white hover:bg-blue-700 px-6 py-3 rounded-md text-lg font-semibold cta-button">
+                            <i class="fas fa-play-circle mr-2"></i> Видеообзор
+                        </button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 flex justify-center">
+                    <div class="game-preview rounded-xl p-4 shadow-2xl floating">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-blue-400">X</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-red-400">O</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-blue-400">X</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-red-400">O</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-blue-400">X</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center"></div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center"></div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center">
+                                <span class="text-3xl font-bold text-red-400">O</span>
+                            </div>
+                            <div class="w-20 h-20 bg-gray-700 flex items-center justify-center"></div>
+                        </div>
+                        <div class="mt-4 text-center text-gray-300">
+                            Ваша игра после прохождения курса
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="bg-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                <div class="p-6 border border-gray-200 rounded-lg">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">2-3</div>
+                    <div class="text-gray-600">недели обучения</div>
+                </div>
+                <div class="p-6 border border-gray-200 rounded-lg">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">5</div>
+                    <div class="text-gray-600">практических модулей</div>
+                </div>
+                <div class="p-6 border border-gray-200 rounded-lg">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">1</div>
+                    <div class="text-gray-600">готовая игра</div>
+                </div>
+                <div class="p-6 border border-gray-200 rounded-lg">
+                    <div class="text-4xl font-bold text-blue-600 mb-2">4</div>
+                    <div class="text-gray-600">освоенных технологии</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Course -->
+    <section id="about" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">О чем этот курс?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Это практический курс для начинающих разработчиков, которые хотят освоить Rust через создание реального проекта.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-xl shadow-sm">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-blue-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-graduation-cap text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Для кого этот курс?</h3>
+                    </div>
+                    <ul class="space-y-4 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Для начинающих разработчиков, которые хотят изучить Rust</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Для тех, кто хочет попробовать себя в геймдеве</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Для программистов на других языках, интересующихся Rust</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Для студентов, желающих расширить свои навыки</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-sm">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-blue-100 p-3 rounded-full mr-4">
+                            <i class="fas fa-trophy text-blue-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900">Что вы получите?</h3>
+                    </div>
+                    <ul class="space-y-4 text-gray-600">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Основы языка Rust на практике</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Опыт работы с 2D-графикой через macroquad</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Полноценную игру, которую можно показать в портфолио</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Навыки публикации WASM-приложений в браузере</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Program Section -->
+    <section id="program" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Программа курса</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    5 модулей, которые шаг за шагом проведут вас от основ Rust до готовой игры
+                </p>
+            </div>
+            
+            <div class="space-y-6 max-w-4xl mx-auto">
+                <!-- Module 1 -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module1-header">
+                        <h3 class="text-xl font-bold text-white">Модуль 1: Введение в Rust и программирование (3 дня)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module1-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module1-content">
+                        <p class="text-gray-700 mb-4">🎯 Цель: понять, как писать код на Rust</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Что такое Rust и зачем он нужен</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Установка Rust и Visual Studio Code</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>cargo — менеджер проектов</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Переменные, типы данных, let и mut</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Условия (if, match)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">&nbsp;</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Циклы: for, while, loop</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Массивы и векторы (Vec)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Функции и структура программы</span>
+                                    </li>
+                                </ul>
+                                <h4 class="font-semibold text-gray-900 mt-4 mb-2">🛠 Задание:</h4>
+                                <p class="text-gray-600">Создать консольную игру «угадай число»</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Module 2 -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module2-header">
+                        <h3 class="text-xl font-bold text-white">Модуль 2: Консольная версия Крестиков-ноликов (2 дня)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module2-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module2-content">
+                        <p class="text-gray-700 mb-4">🎯 Цель: реализовать логику игры без графики</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Представление поля — Vec<Vec<char>></span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Смена ходов (игрок X → игрок O)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Проверка победы (строки, столбцы, диагонали)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">&nbsp;</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Отображение состояния игры в консоли</span>
+                                    </li>
+                                </ul>
+                                <h4 class="font-semibold text-gray-900 mt-4 mb-2">🛠 Задание:</h4>
+                                <p class="text-gray-600">Написать полную консольную игру в терминале</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Module 3 -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module3-header">
+                        <h3 class="text-xl font-bold text-white">Модуль 3: Основы 2D-графики с macroquad (3 дня)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module3-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module3-content">
+                        <p class="text-gray-700 mb-4">🎯 Цель: научиться рисовать и обрабатывать события</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Установка и настройка macroquad</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Игровой цикл и функция main()</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>draw_text, draw_rectangle_lines, clear_background</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">&nbsp;</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>События: обработка кликов мыши</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Получение координат мышки</span>
+                                    </li>
+                                </ul>
+                                <h4 class="font-semibold text-gray-900 mt-4 mb-2">🛠 Задание:</h4>
+                                <p class="text-gray-600">Нарисовать сетку 3×3, выводить координаты ячеек при клике</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Module 4 -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module4-header">
+                        <h3 class="text-xl font-bold text-white">Модуль 4: Графическая версия игры Крестики-нолики (4–5 дней)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module4-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module4-content">
+                        <p class="text-gray-700 mb-4">🎯 Цель: соединить графику и игровую логику</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Привязка кликов к ячейкам поля</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Рисование "X" и "O" (например, с помощью draw_text)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Проверка занятости клетки перед ходом</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">&nbsp;</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Проверка победы с графическим отображением</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Отображение текста победителя</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Кнопка "Сыграть снова"</span>
+                                    </li>
+                                </ul>
+                                <h4 class="font-semibold text-gray-900 mt-4 mb-2">🛠 Задание:</h4>
+                                <p class="text-gray-600">Полноценная графическая игра Крестики-нолики</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Module 5 -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module5-header">
+                        <h3 class="text-xl font-bold text-white">Модуль 5: Сборка игры для браузера (2 дня)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module5-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module5-content">
+                        <p class="text-gray-700 mb-4">🎯 Цель: собрать игру в .wasm и опубликовать на GitHub Pages</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Установка wasm32-unknown-unknown</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Сборка игры с cargo build --target wasm32-unknown-unknown --release</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Настройка index.html и macroquad.js</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">&nbsp;</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Создание репозитория и загрузка в GitHub</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Настройка GitHub Pages</span>
+                                    </li>
+                                </ul>
+                                <h4 class="font-semibold text-gray-900 mt-4 mb-2">🛠 Задание:</h4>
+                                <p class="text-gray-600">Опубликовать игру онлайн и поделиться ссылкой</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bonus Module -->
+                <div class="bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                    <div class="bg-blue-600 px-6 py-4 flex items-center justify-between cursor-pointer" id="module6-header">
+                        <h3 class="text-xl font-bold text-white">📜 Бонус-модуль: Что дальше? (1 день)</h3>
+                        <i class="fas fa-chevron-down text-white transform transition-transform duration-300" id="module6-icon"></i>
+                    </div>
+                    <div class="hidden px-6 py-4" id="module6-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-2">Уроки:</h4>
+                                <ul class="space-y-2 text-gray-600">
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Идеи для новых игр (змейка, пин-понг, шутер)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Как двигаться дальше: изучение Bevy, ECS и SDL</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fas fa-circle text-blue-500 text-xs mt-2 mr-2"></i>
+                                        <span>Rust-геймдев-сообщество и где искать помощь</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tools Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Инструменты, которые ты освоишь</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Практические навыки работы с современными технологиями
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm flex items-center course-card">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fab fa-rust text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">Язык Rust</h3>
+                        <p class="text-gray-600 text-sm">Переменные, условия, функции, векторы</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm flex items-center course-card">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-gamepad text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">macroquad</h3>
+                        <p class="text-gray-600 text-sm">Библиотека для 2D-графики</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm flex items-center course-card">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fab fa-git-alt text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">Git и GitHub</h3>
+                        <p class="text-gray-600 text-sm">Система контроля версий</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm flex items-center course-card">
+                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-globe text-blue-600 text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">WebAssembly</h3>
+                        <p class="text-gray-600 text-sm">Сборка WASM-приложений</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Что вы получите в результате</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Конкретные навыки и готовый проект для портфолио
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                    <div class="bg-blue-100 p-3 rounded-full inline-block mb-4">
+                        <i class="fas fa-code text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Навыки Rust</h3>
+                    <p class="text-gray-600">
+                        Освоите основы Rust на практике: от переменных и условий до работы с векторами и структурами.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                    <div class="bg-blue-100 p-3 rounded-full inline-block mb-4">
+                        <i class="fas fa-laptop-code text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">2D-графика</h3>
+                    <p class="text-gray-600">
+                        Научитесь работать с библиотекой macroquad: рисовать элементы, обрабатывать события мыши.
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 p-8 rounded-xl border border-gray-200">
+                    <div class="bg-blue-100 p-3 rounded-full inline-block mb-4">
+                        <i class="fas fa-gamepad text-blue-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Готовая игра</h3>
+                    <p class="text-gray-600">
+                        Создадите полноценную игру "Крестики-нолики" с графическим интерфейсом и возможностью публикации.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <div class="inline-block bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold cta-button">
+                    Хочу такие же результаты!
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-16 bg-gray-50">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Часто задаваемые вопросы</h2>
+                <p class="text-xl text-gray-600">
+                    Ответы на самые популярные вопросы о курсе
+                </p>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex items-center justify-between w-full text-left" id="faq1-button">
+                        <span class="text-lg font-medium text-gray-900">Нужен ли опыт программирования для этого курса?</span>
+                        <i class="fas fa-chevron-down text-blue-600 transform transition-transform duration-300" id="faq1-icon"></i>
+                    </button>
+                    <div class="hidden mt-4 text-gray-600" id="faq1-content">
+                        Курс рассчитан на начинающих, но базовое понимание принципов программирования (что такое переменные, условия, циклы) будет полезным. Если вы совсем новичок, первые модули помогут вам освоить основы.
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex items-center justify-between w-full text-left" id="faq2-button">
+                        <span class="text-lg font-medium text-gray-900">Какое оборудование нужно для прохождения курса?</span>
+                        <i class="fas fa-chevron-down text-blue-600 transform transition-transform duration-300" id="faq2-icon"></i>
+                    </button>
+                    <div class="hidden mt-4 text-gray-600" id="faq2-content">
+                        Вам понадобится компьютер с Windows, macOS или Linux. Минимальные требования: 4GB RAM, 2GB свободного места на диске. Для комфортной работы рекомендуем 8GB RAM и SSD.
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex items-center justify-between w-full text-left" id="faq3-button">
+                        <span class="text-lg font-medium text-gray-900">Смогу ли я получить помощь, если возникнут трудности?</span>
+                        <i class="fas fa-chevron-down text-blue-600 transform transition-transform duration-300" id="faq3-icon"></i>
+                    </button>
+                    <div class="hidden mt-4 text-gray-600" id="faq3-content">
+                        Да, у курса есть чат поддержки, где вы можете задавать вопросы преподавателям и другим студентам. Среднее время ответа — менее 24 часов.
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex items-center justify-between w-full text-left" id="faq4-button">
+                        <span class="text-lg font-medium text-gray-900">Можно ли проходить курс в своем темпе?</span>
+                        <i class="fas fa-chevron-down text-blue-600 transform transition-transform duration-300" id="faq4-icon"></i>
+                    </button>
+                    <div class="hidden mt-4 text-gray-600" id="faq4-content">
+                        Да, курс доступен в любое время после покупки. Вы можете проходить его в удобном для вас темпе. Рекомендуемый график — 1-2 часа в день в течение 2-3 недель.
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <button class="flex items-center justify-between w-full text-left" id="faq5-button">
+                        <span class="text-lg font-medium text-gray-900">Что делать, если курс мне не подойдет?</span>
+                        <i class="fas fa-chevron-down text-blue-600 transform transition-transform duration-300" id="faq5-icon"></i>
+                    </button>
+                    <div class="hidden mt-4 text-gray-600" id="faq5-content">
+                        Мы предлагаем 14-дневную гарантию возврата денег. Если в течение двух недель вы поймете, что курс вам не подходит, мы вернем полную стоимость.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-blue-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-3xl font-bold mb-6">Готовы создать свою первую игру на Rust?</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto text-blue-100">
+                Начните обучение сегодня и уже через 2-3 недели у вас будет готовый проект для портфолио!
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button class="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 rounded-md text-lg font-semibold cta-button">
+                    Записаться на курс
+                </button>
+                <button class="bg-transparent border-2 border-white hover:bg-blue-700 px-8 py-4 rounded-md text-lg font-semibold cta-button">
+                    <i class="fas fa-question-circle mr-2"></i> Задать вопрос
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Rust GameDev</h3>
+                    <p class="text-gray-400">
+                        Практические курсы по созданию игр на Rust для начинающих разработчиков.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Курсы</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white">Крестики-нолики</a></li>
+                        <li><a href="#" class="hover:text-white">Змейка</a></li>
+                        <li><a href="#" class="hover:text-white">Пин-понг</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Контакты</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <span>hello@rustgamedev.ru</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-telegram mr-2"></i>
+                            <span>@rustgamedev</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fab fa-github mr-2"></i>
+                            <span>github.com/rustgamedev</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold mb-4">Подписаться</h3>
+                    <p class="text-gray-400 mb-4">
+                        Получайте уведомления о новых курсах и бесплатных материалах.
+                    </p>
+                    <div class="flex">
+                        <input type="email" placeholder="Ваш email" class="px-4 py-2 rounded-l-md text-gray-900 w-full">
+                        <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-r-md">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">
+                    © 2023 Rust GameDev. Все права защищены.
+                </p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-telegram text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-vk text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        <i class="fab fa-github text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Module accordions
+        const moduleHeaders = [
+            'module1', 'module2', 'module3', 
+            'module4', 'module5', 'module6'
+        ];
+
+        moduleHeaders.forEach(module => {
+            const header = document.getElementById(`${module}-header`);
+            const content = document.getElementById(`${module}-content`);
+            const icon = document.getElementById(`${module}-icon`);
+
+            header.addEventListener('click', function() {
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // FAQ accordions
+        const faqItems = ['faq1', 'faq2', 'faq3', 'faq4', 'faq5'];
+
+        faqItems.forEach(faq => {
+            const button = document.getElementById(`${faq}-button`);
+            const content = document.getElementById(`${faq}-content`);
+            const icon = document.getElementById(`${faq}-icon`);
+
+            button.addEventListener('click', function() {
+                content.classList.toggle('hidden');
+                icon.classList.toggle('rotate-180');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
